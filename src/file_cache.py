@@ -8,8 +8,8 @@ class FileCache:
     __cache_store = {}
     __cache_path = ''
 
-    def __init__(self, cache_dir, filename):
-        self.__cache_path = join(cache_dir, filename)
+    def __init__(self, cache_path):
+        self.__cache_path = cache_path
 
     def __commit(self):
         ''' Commits to the cache '''
@@ -81,17 +81,3 @@ class FileCache:
             return value[1]
         except:
             return None
-
-    
-    def _flush(self):
-        '''
-            Clears file cache storage
-            Returns: bool
-        '''
-        try:
-            unlink(self.__cache_path)
-            return (True)
-        except:
-            return (False)
-
-    

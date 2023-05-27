@@ -1,7 +1,7 @@
 from .src.file_cache import FileCache
 from .src.db_cache import DBCache
 from os.path import abspath, join
-from os import makedirs
+from os import makedirs, unlink
 import re
 
 class Cache():
@@ -15,11 +15,11 @@ class Cache():
     def __init__(self, storage_type=None, storage_dir=None, file_name=None):
 
         self.__configure(storage_type, storage_dir, file_name)
-
+        self.__cache_path = join(self.storage_dir, self.file_name)
         if self.storage_type == 'file':
-            self.__cache_object = FileCache(self.storage_dir, self.file_name)
+            self.__cache_object = FileCache(self.__cache_path)
         else:
-            self.__cache_object = DBCache(self.storage_dir, self.file_name)
+            self.__cache_object = DBCache(self.__cache_path)
         
 
     def __configure(self, storage_type, storage_dir, file_name):
@@ -84,7 +84,15 @@ class Cache():
             Clears file/db cache storage
             Returns: bool
         '''
-        return self.__cache_object._flush()
+        try:
+            if self.storage_type != 'file':
+                self.__cache_object._drop_connection()
+
+            unlink(self.__cache_path)
+            return (True)
+    
+        except Exception as e:
+            return (False)
 
 
 '''
