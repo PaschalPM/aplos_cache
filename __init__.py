@@ -1,5 +1,5 @@
-from .interfaces.file_cache import FileCache
-from .interfaces.db_cache import DBCache
+from .interface.file_cache import FileCache
+from .interface.db_cache import DBCache
 from os.path import abspath, join
 from os import makedirs, unlink
 import re
