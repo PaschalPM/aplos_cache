@@ -1,15 +1,15 @@
 from os import unlink
-from os.path import abspath, exists
+from os.path import exists, join
 from time import time
+from datetime import timedelta
 from pickle import dump, load
-from glob import glob
 
 class FileCache:
     __cache_store = {}
     __cache_path = ''
 
     def __init__(self, cache_dir, filename):
-        self.__cache_path = cache_dir+'/'+filename
+        self.__cache_path = join(cache_dir, filename)
 
     def __commit(self):
         ''' Commits to the cache '''
@@ -54,12 +54,12 @@ class FileCache:
         return self.__cache_store.get(key, {}).get('value', None)
     
 
-    def _put(self, key, value, expiration=10):
+    def _put(self, key, value, exp_mins=10):
         '''
             Puts data (key, value) into file cache storage
             Returns: bool
         '''
-        __expiration = expiration * 60
+        __expiration = timedelta(minutes=exp_mins).total_seconds()
 
         if (__expiration):
             self.__cache_store[key] = {'value': value, 'expiration': time() + __expiration}

@@ -1,23 +1,38 @@
 from .src.file_cache import FileCache
-from os.path import realpath, relpath, abspath, exists, join
+from .src.db_cache import DBCache
+from os.path import abspath, join
 from os import makedirs
 import re
 
-class Cache(FileCache):
+class Cache():
 
+    storage_type = 'file'
     storage_dir = 'storage' # path to cache storage_directory
     file_name = 'cache'
 
     __cache_object = None
 
-    def __init__(self, storage_dir=None, file_name=None):
+    def __init__(self, storage_type=None, storage_dir=None, file_name=None):
 
-        self.__configure(storage_dir, file_name)
-        self.__cache_object = FileCache(self.storage_dir, self.file_name)
+        self.__configure(storage_type, storage_dir, file_name)
+
+        if self.storage_type == 'file':
+            self.__cache_object = FileCache(self.storage_dir, self.file_name)
+        else:
+            self.__cache_object = DBCache(self.storage_dir, self.file_name)
         
 
-    def __configure(self, storage_dir, file_name):
+    def __configure(self, storage_type, storage_dir, file_name):
         ''' Configures the storage_directory of this cache instance '''
+
+        if not storage_type:
+            self.storage_type = Cache.storage_type
+        else:
+            self.storage_type = storage_type
+
+        if self.storage_type != 'file' and self.storage_type != 'db' and self.storage_type != 'database':
+            raise TypeError('Invalid storage type')
+        
 
         if not storage_dir:
             self.storage_dir = Cache.storage_dir
@@ -34,7 +49,8 @@ class Cache(FileCache):
         else:
             self.file_name = file_name
 
-    
+        self.file_name +='.db' if self.storage_type != 'file' else ''
+
     def has(self, key):
         '''
             Checks if data (key, value) exists in file/db cache storage
@@ -49,12 +65,12 @@ class Cache(FileCache):
         '''
         return self.__cache_object._get(key)
 
-    def put(self, key, value, expiration=10):
+    def put(self, key, value, exp_mins=10):
         '''
             Puts data (key, value) into the file/db cache storage
             Returns: bool
         '''
-        return self.__cache_object._put(key, value, expiration=expiration)
+        return self.__cache_object._put(key, value, exp_mins=exp_mins)
 
     def pull(self, key):
         '''
