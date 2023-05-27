@@ -9,48 +9,45 @@ class Cache():
     storage_type = 'file'
     storage_dir = 'storage' # path to cache storage_directory
     file_name = 'cache'
-
+    
     __cache_object = None
+    __interface_register = {
+        'file': FileCache,
+        'db': DBCache
+    }
 
     def __init__(self, storage_type=None, storage_dir=None, file_name=None):
-
+        '''.
+            Configures the cache path based on the storage 
+            type and sets cache object
+        '''
         self.__configure(storage_type, storage_dir, file_name)
-        self.__cache_path = join(self.storage_dir, self.file_name)
-        if self.storage_type == 'file':
-            self.__cache_object = FileCache(self.__cache_path)
-        else:
-            self.__cache_object = DBCache(self.__cache_path)
+        cache_interface =  Cache.__interface_register.get(self.storage_type)
+        self.__cache_object = cache_interface(self.__cache_path)
         
 
     def __configure(self, storage_type, storage_dir, file_name):
-        ''' Configures the storage_directory of this cache instance '''
+        ''' 
+            Configures the cache path based on the storage 
+            type of this cache instance 
+        '''
 
-        if not storage_type:
-            self.storage_type = Cache.storage_type
-        else:
-            self.storage_type = storage_type
-
-        if self.storage_type != 'file' and self.storage_type != 'db' and self.storage_type != 'database':
-            raise TypeError('Invalid storage type')
+        self.storage_type = storage_type if storage_type else Cache.storage_type
         
+        self.storage_type = 'db' if self.storage_type == 'database' else self.storage_type
+        
+        if self.storage_type != 'file' and self.storage_type != 'db':
+            raise TypeError('Invalid storage type')
 
-        if not storage_dir:
-            self.storage_dir = Cache.storage_dir
-        else:
-            self.storage_dir = storage_dir
-
+        self.storage_dir = storage_dir if storage_dir else Cache.storage_dir
         self.storage_dir = join(abspath('.'), self.storage_dir)
-
         makedirs(self.storage_dir, exist_ok=True)
         
-        ''' Configures the storage file/db name of this cache instance '''
-        if not file_name:
-            self.file_name = Cache.file_name
-        else:
-            self.file_name = file_name
-
+        self.file_name = file_name if file_name else Cache.file_name
         self.file_name +='.db' if self.storage_type != 'file' else ''
 
+        self.__cache_path = join(self.storage_dir, self.file_name)
+    
     def has(self, key):
         '''
             Checks if data (key, value) exists in file/db cache storage
