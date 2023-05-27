@@ -9,14 +9,13 @@ class DBCache:
     _conn = None
     _is_connected = False
     __cursor = None
-    __cache_store = {}
     __cache_path = ''
     __last_sql = ''
     __last_params = {}
 
     def __init__(self, cache_path):
         self.__cache_path = cache_path
-        self._conn = sqlite3.connect(self.__cache_path)
+        self._conn = sqlite3.connect(self.__cache_path, check_same_thread=False)
         self._is_connected = True
         self.__cursor = self._conn.cursor()
         self.__create_table()
