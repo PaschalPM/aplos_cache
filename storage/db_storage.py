@@ -1,21 +1,24 @@
+from .base_storage import BaseStorage
 import sqlite3
+from sqlite3 import Connection, Cursor
 from os import unlink
 from os.path import abspath, join
 from time import time
 from datetime import timedelta
 from pickle import dumps, loads
+from typing import Optional
 
-class DBCache:
-    _conn = None
-    _is_connected = False
-    __cursor = None
-    __cache_path = ''
-    __last_sql = ''
-    __last_params = {}
+class DBStorage(BaseStorage):
+    _conn: Optional[Connection] = None
+    __cursor: Optional[Cursor] = None
+    _is_connected: bool = False
+    __path: str = ''
+    __last_sql: str = ''
+    __last_params: dict = {}
 
-    def __init__(self, cache_path):
-        self.__cache_path = cache_path
-        self._conn = sqlite3.connect(self.__cache_path, check_same_thread=False)
+    def __init__(self, path):
+        self.__path = path
+        self._conn = sqlite3.connect(self.__path, check_same_thread=False)
         self._is_connected = True
         self.__cursor = self._conn.cursor()
         self.__create_table()
@@ -42,14 +45,6 @@ class DBCache:
         ''' Commits to the cache '''
         self._conn.commit()        
 
-
-    def _has(self, key):
-        '''
-            Checks if data (key, value) exists in Database cache storage
-            Returns: bool
-        '''
-        return True if self._get(key) else False
-
     def __prune(self):
         '''
             Prune away expired data from cache table
@@ -60,8 +55,18 @@ class DBCache:
             self.__execute()
             self.__commit()
     
+    def __drop_connection(self):
+        '''
+            Drops the connection to the database
+        '''
+        self._conn.close()
+        self._is_connected = False
 
-    def _get(self, key):
+    def __del__(self):
+        self._conn.close()
+
+
+    def get(self, key):
         '''
             Retrieves data (key, value) if exists in Database cache storage
             Returns: data | None
@@ -76,7 +81,14 @@ class DBCache:
     
         return None
 
-    def _put(self, key, value, exp_mins=10):
+    def has(self, key):
+        '''
+            Checks if data (key, value) exists in Database cache storage
+            Returns: bool
+        '''
+        return True if self.get(key) else False
+
+    def put(self, key, value, exp_mins=10):
         '''
             Puts key, value, expiration into cache Database
             Returns: bool
@@ -96,7 +108,7 @@ class DBCache:
 
         return False
 
-    def _pull(self, key):
+    def pull(self, key):
         '''
             Deletes data (key, value) from Database cache storage
             Returns: data | None
@@ -111,12 +123,13 @@ class DBCache:
 
         return value
     
-    def _drop_connection(self):
+    def flush(self) -> bool:
         '''
-            Drops the connection to the database
+            Clears db cache storage
+            Returns: bool
         '''
-        self._conn.close()
-        self._is_connected = False
-
-    def __del__(self):
-        self._conn.close()
+     
+        self.__drop_connection()
+        return self._unlink()
+   
+    
