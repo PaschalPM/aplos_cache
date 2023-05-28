@@ -12,11 +12,11 @@ class StorageFactory():
         'file': FileStorage
     }
 
-    def __retrieve_storage(self, path:str, storage_type:str):
+    def __retrieve_storage(self, path:str, storage_type:str) -> None:
         ''' Retrieves storage instance '''
         self.storage_instance = self.__storages.get(storage_type)(path)
 
-    def __init__(self, path:str, storage_type:str = 'file') -> bool:
+    def __init__(self, path:str, storage_type:str = 'file') -> None:
         ''' 
             Configures the cache path based on the storage 
             type of this cache instance 

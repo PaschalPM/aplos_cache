@@ -24,7 +24,7 @@ class DBStorage(BaseStorage):
         self.__create_table()
         self.__prune()
     
-    def __create_table(self):
+    def __create_table(self) -> None:
         ''' 
             Create the cache table
         '''
@@ -41,11 +41,11 @@ class DBStorage(BaseStorage):
         ''' Executes SQL Statements '''
         return self.__cursor.execute(self.__last_sql, self.__last_params)
     
-    def __commit(self):
+    def __commit(self) -> None:
         ''' Commits to the cache '''
         self._conn.commit()        
 
-    def __prune(self):
+    def __prune(self) -> None:
         '''
             Prune away expired data from cache table
         '''
@@ -55,7 +55,7 @@ class DBStorage(BaseStorage):
             self.__execute()
             self.__commit()
     
-    def __drop_connection(self):
+    def __drop_connection(self) -> None:
         '''
             Drops the connection to the database
         '''
@@ -66,7 +66,7 @@ class DBStorage(BaseStorage):
         self._conn.close()
 
 
-    def get(self, key):
+    def get(self, key) -> list | dict | int | str:
         '''
             Retrieves data (key, value) if exists in Database cache storage
             Returns: data | None
@@ -81,14 +81,14 @@ class DBStorage(BaseStorage):
     
         return None
 
-    def has(self, key):
+    def has(self, key) -> bool:
         '''
             Checks if data (key, value) exists in Database cache storage
             Returns: bool
         '''
         return True if self.get(key) else False
 
-    def put(self, key, value, exp_mins=10):
+    def put(self, key, value, exp_mins=10) -> bool:
         '''
             Puts key, value, expiration into cache Database
             Returns: bool
@@ -108,7 +108,7 @@ class DBStorage(BaseStorage):
 
         return False
 
-    def pull(self, key):
+    def pull(self, key) -> list | dict | int | str:
         '''
             Deletes data (key, value) from Database cache storage
             Returns: data | None

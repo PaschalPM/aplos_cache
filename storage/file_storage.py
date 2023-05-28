@@ -12,13 +12,13 @@ class FileStorage(BaseStorage):
     def __init__(self, path):
         self.__path = path
 
-    def __commit(self):
+    def __commit(self) -> None:
         ''' Commits to the cache '''
         with open(self.__path, 'wb') as fp:
             dump(self.__store, fp)
 
 
-    def _reload(self):
+    def _reload(self) -> None:
         '''
             Syncs cache store object with file store
         '''
@@ -37,7 +37,7 @@ class FileStorage(BaseStorage):
                     self.__commit()
         
 
-    def has(self, key):
+    def has(self, key) -> bool:
         '''
             Checks if data (key, value) exists in file cache storage
             Returns: bool
@@ -46,7 +46,7 @@ class FileStorage(BaseStorage):
         return True if self.__store.get(key, None) else False
 
 
-    def get(self, key):
+    def get(self, key) -> list | dict | int | str:
         '''
             Retrieves data (key, value) if exists in file cache storage
             Returns: data | None
@@ -55,7 +55,7 @@ class FileStorage(BaseStorage):
         return self.__store.get(key, {}).get('value', None)
     
 
-    def put(self, key, value, exp_mins=10):
+    def put(self, key, value, exp_mins=10) -> bool:
         '''
             Puts data (key, value) into file cache storage
             Returns: bool
@@ -70,7 +70,7 @@ class FileStorage(BaseStorage):
         return False
 
 
-    def pull(self, key):
+    def pull(self, key) -> list | dict | int | str:
         '''
             Deletes data (key, value) from file cache storage
             Returns: data | None
